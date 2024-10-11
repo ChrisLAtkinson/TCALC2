@@ -51,4 +51,57 @@ def generate_pdf(report_title: str, df: pd.DataFrame, total_current_tuition: flo
     pdf.drawString(50, height - 80, f"Total Current Tuition: {format_currency(total_current_tuition)}")
     pdf.drawString(50, height - 100, f"Total New Tuition: {format_currency(total_new_tuition)}")
     pdf.drawString(50, height - 120, f"Average Tuition Increase Percentage: {avg_increase_percentage:.2f}%")
-    pdf.drawString(50, height - 140, f"Tuition Assistance
+    pdf.drawString(50, height - 140, f"Tuition Assistance Ratio: {tuition_assistance_ratio:.2f}%")  # Added closing bracket
+
+    # Add the table for tuition by grade level
+    pdf.drawString(50, height - 170, "Tuition by Grade Level:")
+    row_y = height - 190
+    pdf.setFont("Helvetica", 10)
+    for i, row in df.iterrows():
+        pdf.drawString(50, row_y, f"{row['Grade']}: {row['Number of Students']} students, "
+                                  f"Current Tuition: {row['Current Tuition per Student']}, "
+                                  f"New Tuition: {row['New Tuition per Student']}")
+        row_y -= 15
+
+    # Strategic Items Section
+    if not strategic_items_df.empty:
+        row_y -= 20
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(50, row_y, "Strategic Items and Costs:")
+        row_y -= 20
+        pdf.setFont("Helvetica", 10)
+        for i, row in strategic_items_df.iterrows():
+            pdf.drawString(50, row_y, f"{row['Strategic Item']}: {row['Cost ($)']}")
+            row_y -= 15
+
+    # Add the calculation summary text
+    row_y -= 20
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(50, row_y, "Summary of Calculations:")
+    row_y -= 20
+    pdf.setFont("Helvetica", 10)
+    for line in textwrap.wrap(summary_text, width=TEXT_WRAP_WIDTH):
+        pdf.drawString(50, row_y, line)
+        row_y -= 15
+
+    # Finalize PDF
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+def main():
+    st.title("Tuition Calculation Tool")
+
+    # Step 1: Enter a Custom Title for the Report
+    report_title = st.text_input("Enter a Custom Title for the Report", "2025-26 Tuition Projection")
+
+    # Step 2: Add Custom Grade Levels and Tuition Rates
+    st.subheader("Step 2: Add Custom Grade Levels and Tuition Rates")
+    grades = []
+    num_students = []
+    current_tuition = []
+    num_grades = st.number_input("Number of Grade Levels", min_value=1, max_value=MAX_GRADE_LEVELS, value=1, step=1)
+
+    for i in range(num_grades):
+        grade = st.text_input(f"Grade Level {i+1} Name", f"Grade {i+1}")
+        students = st.number_input(f"Number of Students in {grade}", min_value=0, step=1,
