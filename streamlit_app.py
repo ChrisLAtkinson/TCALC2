@@ -15,8 +15,8 @@ def format_currency(value):
     try:
         return locale.currency(value, grouping=True)
     except:
-        # Using a separate variable to build the string
-        formatted_value = f"<span class="math-inline">\{value\:,\.2f\}" 
+        # Using a separate variable to build the string with correct escaping
+        formatted_value = f"<span class="math-inline">\{value\:,\.2f\}"  
 return f"<span class\='math\-inline'\>\{formatted\_value\}</span\>" 
 \# Function to format input strings as currency
 def format\_input\_as\_currency\(input\_value\)\:
@@ -145,5 +145,3 @@ roi_percentage = st.number_input("Rate of Inflation (ROI) %", min_value=0.0, ste
 rpi_percentage = st.number_input("Rate of Productivity Increase (RPI) %", min_value=0.0, step=0.01, value=2.08)
 oti = roi_percentage + rpi_percentage
 st.text(f"Operations Tuition Increase (OTI): {oti:.2f}%")
-
-# Step
