@@ -15,7 +15,9 @@ def format_currency(value):
     try:
         return locale.currency(value, grouping=True)
     except:
-        return f"<span class='math-inline'><span class="math-inline">\{value\:,\.2f\}</span\>"  \# Corrected line
+        # Using a separate variable to build the string
+        formatted_value = f"<span class="math-inline">\{value\:,\.2f\}" 
+return f"<span class\='math\-inline'\>\{formatted\_value\}</span\>" 
 \# Function to format input strings as currency
 def format\_input\_as\_currency\(input\_value\)\:
 try\:
@@ -144,5 +146,4 @@ rpi_percentage = st.number_input("Rate of Productivity Increase (RPI) %", min_va
 oti = roi_percentage + rpi_percentage
 st.text(f"Operations Tuition Increase (OTI): {oti:.2f}%")
 
-# Step 8: Automatically Calculate Strategic Items (SI) Percentage
-total_strategic_items_cost =
+# Step
