@@ -42,6 +42,27 @@ def generate_pdf(report_title: str, df: pd.DataFrame, total_current_tuition: flo
 
 def main():
     st.title("Tuition Calculation Tool")
+    
+    # Step 1: Enter a Custom Title for the Report
+    report_title = st.text_input("Enter a Custom Title for the Report", "2025-26 Tuition Projection")
+
+    # Step 2: Add Custom Grade Levels and Tuition Rates
+    st.subheader("Step 2: Add Custom Grade Levels and Tuition Rates")
+    grades = []
+    num_students = []
+    current_tuition = []
+    num_grades = st.number_input("Number of Grade Levels", min_value=1, max_value=MAX_GRADE_LEVELS, value=1, step=1)
+
+    for i in range(num_grades):
+        grade = st.text_input(f"Grade Level {i+1} Name", f"Grade {i+1}")
+        students = st.number_input(f"Number of Students in {grade}", min_value=0, step=1, value=0)
+        tuition_input = st.text_input(f"Current Tuition per Student in {grade} ($)", "")
+        formatted_tuition = format_input_as_currency(tuition_input)
+        st.text(f"Formatted Tuition: {formatted_tuition}")
+        tuition = float(formatted_tuition.replace(",", "").replace("$", "")) if formatted_tuition else 0.0
+        grades.append(grade)
+        num_students.append(students)
+        current_tuition.append(tuition)
 
     # ... (rest of the code)
 
