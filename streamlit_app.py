@@ -87,7 +87,7 @@ num_grades = st.number_input("Number of Grade Levels", min_value=1, max_value=12
 for i in range(num_grades):
     grade = st.text_input(f"Grade Level {i+1} Name", f"Grade {i+1}")
     students = st.number_input(f"Number of Students in {grade}", min_value=0, step=1, value=0)
-    tuition_input = st.text_input(f"Current Tuition per Student in {grade} (<span class='math-inline'><span class="math-inline"></span\>\)", ""\) 
+   tuition_input = st.text_input(f"Current Tuition per Student in {grade} (<span class='math-inline'>$</span>)", "")
 try\:
 if tuition\_input\:
 tuition \= float\(tuition\_input\.replace\(",", ""\)\) 
