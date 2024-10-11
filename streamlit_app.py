@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go  # Though not used in this snippet
 import locale
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
@@ -88,7 +87,7 @@ num_grades = st.number_input("Number of Grade Levels", min_value=1, max_value=12
 for i in range(num_grades):
     grade = st.text_input(f"Grade Level {i+1} Name", f"Grade {i+1}")
     students = st.number_input(f"Number of Students in {grade}", min_value=0, step=1, value=0)
-    tuition_input = st.text_input(f"Current Tuition per Student in {grade} (<span class='math-inline'><span class="math-inline"></span\>\)", ""\)
+    tuition_input = st.text_input(f"Current Tuition per Student in {grade} (<span class='math-inline'><span class="math-inline"></span\>\)", ""\) 
 try\:
 if tuition\_input\:
 tuition \= float\(tuition\_input\.replace\(",", ""\)\) 
@@ -132,4 +131,24 @@ item\_cost\_input \= st\.text\_input\(f"Cost of \{item\_name\} \(<span class\='m
     st.text(f"Formatted Cost: {formatted_item_cost}")
     
     strategic_item_names.append(item_name)
-    strategic_
+    strategic_items_costs.append(item_cost)
+
+# Step 5: Previous Year’s Expenses
+st.subheader("Step 5: Previous Year's Total Expenses")
+previous_expenses_input = st.text_input("Previous Year's Total Expenses (<span class='math-inline'><span class="math-inline"></span\>\)", ""\)
+formatted\_previous\_expenses \= format\_currency\(previous\_expenses\_input\)
+st\.text\(f"Formatted Previous Expenses\: \{formatted\_previous\_expenses\}"\)
+previous\_expenses \= float\(formatted\_previous\_expenses\.replace\(",", ""\)\.replace\("</span\>", ""\)\) if formatted\_previous\_expenses else 0\.0
+\# Step 6\: Additional Income
+st\.subheader\("Step 6\: Additional Income"\)
+additional\_income\_input \= st\.text\_input\("Additional Income \(Fundraising, Grants, etc\.\) \(<span class\='math\-inline'\></span></span>)", "")
+formatted_additional_income = format_currency(additional_income_input)
+st.text(f"Formatted Additional Income: {formatted_additional_income}")
+additional_income = float(formatted_additional_income.replace(",", "").replace("</span>", "")) if formatted_additional_income else 0.0
+
+# Step 7: Operations Tuition Increase (OTI) Calculation
+st.subheader("Step 7: Operations Tuition Increase (OTI) Calculation")
+roi_percentage = st.number_input("Rate of Inflation (ROI) %", min_value=0.0, step=0.01, value=3.32)
+rpi_percentage = st.number_input("Rate of Productivity Increase (RPI) %", min_value=0.0, step=0.01, value=2.08)
+oti = roi_percentage + rpi_percentage
+st.text(f"
