@@ -38,33 +38,17 @@ def generate_pdf(report_title: str, df: pd.DataFrame, total_current_tuition: flo
                  total_new_tuition: float, avg_increase_percentage: float, 
                  tuition_assistance_ratio: float, strategic_items_df: pd.DataFrame, 
                  summary_text: str) -> BytesIO:
-    # ... (refactored into smaller functions)
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
 
-def main():
-    st.title("Tuition Calculation Tool")
-    
-    # Step 1: Enter a Custom Title for the Report
-    report_title = st.text_input("Enter a Custom Title for the Report", "2025-26 Tuition Projection")
+    # Title of the report
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(50, height - 50, f"Report Title: {report_title}")
 
-    # Step 2: Add Custom Grade Levels and Tuition Rates
-    st.subheader("Step 2: Add Custom Grade Levels and Tuition Rates")
-    grades = []
-    num_students = []
-    current_tuition = []
-    num_grades = st.number_input("Number of Grade Levels", min_value=1, max_value=MAX_GRADE_LEVELS, value=1, step=1)
-
-    for i in range(num_grades):
-        grade = st.text_input(f"Grade Level {i+1} Name", f"Grade {i+1}")
-        students = st.number_input(f"Number of Students in {grade}", min_value=0, step=1, value=0)
-        tuition_input = st.text_input(f"Current Tuition per Student in {grade} ($)", "")
-        formatted_tuition = format_input_as_currency(tuition_input)
-        st.text(f"Formatted Tuition: {formatted_tuition}")
-        tuition = float(formatted_tuition.replace(",", "").replace("$", "")) if formatted_tuition else 0.0
-        grades.append(grade)
-        num_students.append(students)
-        current_tuition.append(tuition)
-
-    # ... (rest of the code)
-
-if __name__ == "__main__":
-    main()
+    # Summary details
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(50, height - 80, f"Total Current Tuition: {format_currency(total_current_tuition)}")
+    pdf.drawString(50, height - 100, f"Total New Tuition: {format_currency(total_new_tuition)}")
+    pdf.drawString(50, height - 120, f"Average Tuition Increase Percentage: {avg_increase_percentage:.2f}%")
+    pdf.drawString(50, height - 140, f"Tuition Assistance
