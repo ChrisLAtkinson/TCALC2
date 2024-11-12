@@ -82,6 +82,20 @@ new_expense_budget = previous_expenses * (1 + total_increase_percentage / 100)
 st.write(f"Total Increase in Expenses: {total_increase_percentage:.2f}%")
 st.write(f"Projected New Expense Budget: {format_currency(new_expense_budget)}")
 
+# Step 5: Tuition Assistance
+st.subheader("Step 5: Tuition Assistance")
+financial_aid_input = st.text_input("Enter the Total Financial Aid Provided ($)", "")
+formatted_financial_aid = format_input_as_currency(financial_aid_input)
+try:
+    financial_aid = float(formatted_financial_aid.replace(",", "").replace("$", ""))
+except ValueError:
+    financial_aid = 0.0
+
+if financial_aid > 0:
+    st.success(f"Total Financial Aid: {format_currency(financial_aid)}")
+else:
+    st.warning("Please enter a valid financial aid amount.")
+
 # Step 6: Tuition Adjustment by Grade Level
 st.subheader("Step 6: Tuition Adjustment by Grade Level")
 
@@ -103,15 +117,17 @@ grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_
 current_total_tuition = grades_df["Total Current Tuition"].sum()
 projected_total_tuition = grades_df["Total Projected Tuition"].sum()
 
-# Results button before adjustments
+# Pre-adjustment Metrics
 if st.button("View Results Before Adjustments"):
     st.subheader("Initial Projected Tuition Increase")
     st.table(grades_df)
 
+    tuition_assistance_ratio_projected = (financial_aid / projected_total_tuition) * 100 if projected_total_tuition > 0 else 0.0
     income_to_expense_ratio_projected = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
     tuition_rate_increase_projected = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
     st.write(f"**Projected Total Tuition (Before Adjustments):** {format_currency(projected_total_tuition)}")
+    st.write(f"**Projected Tuition Assistance Ratio:** {tuition_assistance_ratio_projected:.2f}%")
     st.write(f"**Projected Income to Expense (I/E) Ratio:** {income_to_expense_ratio_projected:.2f}%")
     st.write(f"**Tuition Rate Increase (Projected):** {tuition_rate_increase_projected:.2f}%")
 
@@ -130,15 +146,19 @@ for i, grade in grades_df.iterrows():
 grades_df["Adjusted Tuition per Student"] = adjusted_tuitions
 grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
 
+# Post-adjustment Metrics
 adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
+tuition_assistance_ratio_adjusted = (financial_aid / adjusted_total_tuition) * 100 if adjusted_total_tuition > 0 else 0.0
 income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
 tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
-# Real-time metrics for adjusted tuition
 st.subheader("Adjusted Results")
 st.table(grades_df)
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
 st.write("This is the revenue collected based on user-defined adjustments to tuition rates for each grade.")
+
+st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
+st.write("This measures how much of the adjusted tuition revenue is allocated to financial aid.")
 
 st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
 st.write("This shows whether adjusted tuition revenue is sufficient to cover the school’s expenses after adjustments.")
