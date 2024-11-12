@@ -127,9 +127,16 @@ if st.button("View Results Before Adjustments"):
     tuition_rate_increase_projected = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
     st.write(f"**Projected Total Tuition (Before Adjustments):** {format_currency(projected_total_tuition)}")
+    st.write("This represents the total projected tuition revenue after applying the calculated percentage increase (from inflation, productivity, and strategic items) to the current tuition rates.")
+
     st.write(f"**Projected Tuition Assistance Ratio:** {tuition_assistance_ratio_projected:.2f}%")
+    st.write("This measures how much of the projected tuition revenue is allocated to financial aid.")
+
     st.write(f"**Projected Income to Expense (I/E) Ratio:** {income_to_expense_ratio_projected:.2f}%")
+    st.write("This shows whether the projected tuition revenue is sufficient to cover the school’s projected expenses. A ratio above 100% means revenue exceeds expenses, while below 100% means a shortfall.")
+
     st.write(f"**Tuition Rate Increase (Projected):** {tuition_rate_increase_projected:.2f}%")
+    st.write("This indicates the percentage growth in tuition revenue due to the projected changes compared to the current tuition levels.")
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
