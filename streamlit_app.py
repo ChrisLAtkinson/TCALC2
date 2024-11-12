@@ -1,67 +1,103 @@
-import asyncio
-from typing import List, Optional
-import random
-from dataclasses import dataclass, field
-from collections import namedtuple
+import streamlit as st
+import pandas as pd
+import locale
 
-# Using PEP 695's type parameter syntax for generics
-Person = namedtuple('Person', ['name', 'age'])
+# Configure locale for currency formatting
+locale.setlocale(locale.LC_ALL, '')
 
-@dataclass
-class Employee:
-    """A class representing an employee with modern Python features."""
-    name: str
-    age: int
-    skills: List[str] = field(default_factory=list)
-    salary: Optional[int] = None
+def format_currency(value):
+    """Format numbers as currency."""
+    try:
+        return locale.currency(value, grouping=True)
+    except:
+        return f"${value:,.2f}"
 
-    def greet(self):
-        """Greet method for Employee class."""
-        return f"Hello, I'm {self.name}, an {self.age} year old employee."
+def format_input_as_currency(input_value):
+    """Format input strings as currency."""
+    try:
+        if not input_value:
+            return ""
+        # Remove any non-numeric characters except for decimal points
+        input_value = ''.join(filter(lambda x: x.isdigit() or x == '.', input_value))
+        value = float(input_value)
+        return f"${value:,.2f}"
+    except ValueError:
+        return "Invalid input"
 
-# Async function showcasing the use of async/await with Python 3.12 features
-async def fetch_data(id: int) -> dict:
-    """Simulates fetching data asynchronously."""
-    await asyncio.sleep(random.uniform(0.5, 1.5))  # Simulate network delay
-    return {"id": id, "data": f"Data for {id}"}
+# Streamlit App Start
+st.title("Tuition and Expense Planning Tool")
 
-async def main():
-    """Main function to demonstrate async operations with list comprehension."""
-    tasks = [fetch_data(i) for i in range(3)]  # List comprehension for task creation
-    results = await asyncio.gather(*tasks)
-    for result in results:
-        print(f"Fetched {result}")
+# Assume these variables are defined or input somewhere in your Streamlit app
+# current_total_tuition = ...
+# financial_aid = ...
+# new_expense_budget = ...
 
-# Python 3.12's improved f-string capabilities
-def format_currency(amount: float) -> str:
-    """Format numbers as currency using new f-string capabilities."""
-    return f"${amount:,.2f}"
+if st.button("View Results"):
+    st.subheader("Initial Projected Tuition Increase")
+    # Assume grades_df is defined earlier in your code
+    st.table(grades_df)
 
-# Demonstration of error handling with match-case (PEP 636)
-def describe_number(num: int) -> str:
-    """Describe a number using pattern matching."""
-    match num:
-        case 0:
-            return "Zero"
-        case 1:
-            return "One"
-        case _ if num > 0:
-            return "Positive"
-        case _ if num < 0:
-            return "Negative"
+    # Real-time metrics after results
+    projected_total_tuition = grades_df["Total Projected Tuition"].sum()
+    tuition_assistance_ratio_projected = (financial_aid / projected_total_tuition) * 100 if projected_total_tuition > 0 else 0.0
+    income_to_expense_ratio_projected = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+    tuition_rate_increase_projected = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
-if __name__ == "__main__":
-    # Example usage
-    print(Employee("Alice", 30, ["Python", "SQL"]).greet())
+    # Projected Results with Explanations
+    st.subheader("Projected Results")
     
-    # Run the async main function
-    asyncio.run(main())
+    results_projected = {
+        "Metric": ["Current Total Tuition", "Projected Total Tuition", 
+                   "Tuition Assistance Ratio", "Income to Expense Ratio", "Tuition Rate Increase"],
+        "Value": [
+            format_currency(current_total_tuition),
+            format_currency(projected_total_tuition),
+            f"{tuition_assistance_ratio_projected:.2f}%",
+            f"{income_to_expense_ratio_projected:.2f}%",
+            f"{tuition_rate_increase_projected:.2f}%"
+        ],
+        "Explanation": [
+            "Total tuition revenue currently collected across all grades.",
+            "Estimated revenue after applying the calculated percentage increase.",
+            "Percentage of tuition revenue allocated to financial aid.",
+            "Whether projected tuition revenue covers expenses.",
+            "Percentage growth in revenue due to projected tuition changes."
+        ]
+    }
     
-    # Currency formatting
-    print(format_currency(1234567.89))
+    st.table(pd.DataFrame(results_projected))
+
+# User adjustments for tuition per grade level (Assuming this part exists)
+
+# Adjusted Results with Explanations
+st.subheader("Adjusted Results")
     
-    # Number description
-    print(describe_number(0))
-    print(describe_number(1))
-    print(describe_number(-5))
-    print(describe_number(10))
+# Assuming these are calculated based on user inputs
+# adjusted_total_tuition = ...
+# tuition_assistance_ratio_adjusted = ...
+# income_to_expense_ratio_adjusted = ...
+# tuition_rate_increase_adjusted = ...
+
+results_adjusted = {
+    "Metric": ["Adjusted Total Tuition", "Adjusted Tuition Assistance Ratio", 
+               "Adjusted Income to Expense Ratio", "Adjusted Tuition Rate Increase"],
+    "Value": [
+        format_currency(adjusted_total_tuition),
+        f"{tuition_assistance_ratio_adjusted:.2f}%",
+        f"{income_to_expense_ratio_adjusted:.2f}%",
+        f"{tuition_rate_increase_adjusted:.2f}%"
+    ],
+    "Explanation": [
+        "Revenue based on user-defined tuition rate adjustments.",
+        "Percentage of adjusted tuition revenue allocated to financial aid.",
+        "Whether adjusted tuition revenue covers expenses.",
+        "Percentage increase in tuition revenue based on adjustments."
+    ]
+}
+    
+st.table(pd.DataFrame(results_adjusted))
+
+# Print Button
+if st.button("Print Results"):
+    st.markdown("### Print this page for records:")
+    st.write("Please use your browser's print function (Ctrl+P or Cmd+P) to print this page.")
