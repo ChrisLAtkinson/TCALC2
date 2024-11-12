@@ -100,23 +100,13 @@ grades_df["Projected Tuition per Student"] = grades_df["Current Tuition"] * (1 +
 grades_df["Total Current Tuition"] = grades_df["Number of Students"] * grades_df["Current Tuition"]
 grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_df["Projected Tuition per Student"]
 
-# Display tuition rate summary
-st.subheader("Tuition Rate Summary")
-st.table(grades_df)
+# Results button before adjustments
+if st.button("View Results Before Adjustments"):
+    st.subheader("Initial Projected Tuition Increase")
+    st.table(grades_df)
 
-# Print Button for CSV Download
-csv_buffer = io.StringIO()
-grades_df.to_csv(csv_buffer, index=False)
-csv_data = csv_buffer.getvalue()
-
-st.download_button(
-    label="Download Tuition Rate Summary",
-    data=csv_data,
-    file_name="tuition_rate_summary.csv",
-    mime="text/csv",
-)
-
-# Final Adjustments and Results (Optional Interaction)
+# Adjust Tuition by Grade Level
+st.subheader("Adjust Tuition by Grade Level")
 adjusted_tuitions = []
 for i, grade in grades_df.iterrows():
     adjusted_tuition = st.number_input(
@@ -130,10 +120,20 @@ for i, grade in grades_df.iterrows():
 grades_df["Adjusted Tuition per Student"] = adjusted_tuitions
 grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
 
-# Final Metrics and Adjusted Results
-st.subheader("Adjusted Results")
-st.table(grades_df)
-
 # Real-time metrics for adjusted tuition
 adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
+st.subheader("Adjusted Results")
+st.table(grades_df)
 st.write(f"**Adjusted Total Tuition:** {format_currency(adjusted_total_tuition)}")
+
+# Print Button for CSV Download
+csv_buffer = io.StringIO()
+grades_df.to_csv(csv_buffer, index=False)
+csv_data = csv_buffer.getvalue()
+
+st.download_button(
+    label="Download Tuition Rate Summary",
+    data=csv_data,
+    file_name="tuition_rate_summary.csv",
+    mime="text/csv",
+)
