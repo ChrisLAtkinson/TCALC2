@@ -108,7 +108,6 @@ if st.button("View Results Before Adjustments"):
     st.subheader("Initial Projected Tuition Increase")
     st.table(grades_df)
 
-    tuition_assistance_ratio_projected = 0.0  # Placeholder for financial aid logic
     income_to_expense_ratio_projected = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
     tuition_rate_increase_projected = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
@@ -132,7 +131,6 @@ grades_df["Adjusted Tuition per Student"] = adjusted_tuitions
 grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
 
 adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
-tuition_assistance_ratio_adjusted = 0.0  # Placeholder for financial aid logic
 income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
 tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
@@ -140,9 +138,13 @@ tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuitio
 st.subheader("Adjusted Results")
 st.table(grades_df)
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
-st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
+st.write("This is the revenue collected based on user-defined adjustments to tuition rates for each grade.")
+
 st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
+st.write("This shows whether adjusted tuition revenue is sufficient to cover the school’s expenses after adjustments.")
+
 st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
+st.write("This shows the percentage increase in tuition revenue based on the user’s adjustments.")
 
 # Print Button for CSV Download
 csv_buffer = io.StringIO()
