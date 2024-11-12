@@ -100,10 +100,21 @@ grades_df["Projected Tuition per Student"] = grades_df["Current Tuition"] * (1 +
 grades_df["Total Current Tuition"] = grades_df["Number of Students"] * grades_df["Current Tuition"]
 grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_df["Projected Tuition per Student"]
 
+current_total_tuition = grades_df["Total Current Tuition"].sum()
+projected_total_tuition = grades_df["Total Projected Tuition"].sum()
+
 # Results button before adjustments
 if st.button("View Results Before Adjustments"):
     st.subheader("Initial Projected Tuition Increase")
     st.table(grades_df)
+
+    tuition_assistance_ratio_projected = 0.0  # Placeholder for financial aid logic
+    income_to_expense_ratio_projected = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+    tuition_rate_increase_projected = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
+
+    st.write(f"**Projected Total Tuition (Before Adjustments):** {format_currency(projected_total_tuition)}")
+    st.write(f"**Projected Income to Expense (I/E) Ratio:** {income_to_expense_ratio_projected:.2f}%")
+    st.write(f"**Tuition Rate Increase (Projected):** {tuition_rate_increase_projected:.2f}%")
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
@@ -120,11 +131,18 @@ for i, grade in grades_df.iterrows():
 grades_df["Adjusted Tuition per Student"] = adjusted_tuitions
 grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
 
-# Real-time metrics for adjusted tuition
 adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
+tuition_assistance_ratio_adjusted = 0.0  # Placeholder for financial aid logic
+income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
+
+# Real-time metrics for adjusted tuition
 st.subheader("Adjusted Results")
 st.table(grades_df)
-st.write(f"**Adjusted Total Tuition:** {format_currency(adjusted_total_tuition)}")
+st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
+st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
+st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
+st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
 
 # Print Button for CSV Download
 csv_buffer = io.StringIO()
