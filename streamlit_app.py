@@ -24,11 +24,14 @@ def format_input_as_currency(input_value):
     except ValueError:
         return ""
 
-# Custom CSS to ensure full-width tables
+# Custom CSS to make tables span full width and remove horizontal scrolling
 st.markdown("""
     <style>
+        .streamlit-container {
+            max-width: 100% !important;
+        }
         .stDataFrame div[data-testid="stHorizontalOverflow"] {
-            overflow-x: auto;
+            overflow: visible !important;
         }
         .stDataFrame div[data-testid="stDataFrameContainer"] {
             width: 100% !important;
