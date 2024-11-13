@@ -132,6 +132,11 @@ if st.button("View Initial Results"):
     initial_table_height = calculate_table_height(len(grades_initial_df))
     AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
 
+    # Calculate initial metrics
+    tuition_assistance_ratio_initial = (financial_aid / grades_df["Total Projected Tuition"].sum()) * 100 if grades_df["Total Projected Tuition"].sum() > 0 else 0.0
+    income_to_expense_ratio_initial = (grades_df["Total Projected Tuition"].sum() / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+    tuition_rate_increase_initial = ((grades_df["Total Projected Tuition"].sum() - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
+
     # Initial Metrics Explanations
     st.write(f"**Initial Total Tuition (Projected):** {format_currency(grades_df['Total Projected Tuition'].sum())}")
     st.write(f"*(The total expected tuition revenue based on projected rates and student numbers.)*")
