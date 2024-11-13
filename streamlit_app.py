@@ -144,7 +144,7 @@ if st.button("View Initial Results"):
     st.write(f"**Initial Tuition Rate Increase:** {initial_tuition_rate_increase:.2f}%")
     st.caption("This shows the percentage increase in tuition revenue based on the calculated tuition adjustments before user modifications.")
 
-# Post-Adjustment Results
+# Adjustments and Post-Adjustment Results
 st.subheader("Results: Post-Adjustment Tuition")
 adjusted_tuitions = []
 for i, row in grades_df.iterrows():
@@ -165,4 +165,18 @@ post_tuition_assistance_ratio = (financial_aid / post_total_tuition) * 100 if po
 post_income_to_expense_ratio = (post_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
 post_tuition_rate_increase = ((post_total_tuition - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
 
-grades_post_adjustment_df = grades
+grades_post_adjustment_df = grades_df.copy()
+grades_post_adjustment_df["Adjusted Tuition per Student"] = grades_post_adjustment_df["Adjusted Tuition per Student"].apply(format_currency)
+grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df["Total Adjusted Tuition"].apply(format_currency)
+
+post_table_height = calculate_table_height(len(grades_post_adjustment_df))
+AgGrid(grades_post_adjustment_df, height=post_table_height)
+
+st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(post_total_tuition)}")
+st.caption("This is the revenue collected based on user-defined adjustments to tuition rates for each grade.")
+st.write(f"**Adjusted Tuition Assistance Ratio:** {post_tuition_assistance_ratio:.2f}%")
+st.caption("This measures how much of the adjusted tuition revenue is allocated to financial aid.")
+st.write(f"**Adjusted Income to Expense Ratio:** {post_income_to_expense_ratio:.2f}%")
+st.caption("This shows whether adjusted tuition revenue is sufficient to cover the school’s expenses after adjustments.")
+st.write(f"**Tuition Rate Increase (Adjusted):** {post_tuition_rate_increase:.2f}%")
+st.caption("This shows the percentage increase in tuition revenue based on the user’s adjustments.")
