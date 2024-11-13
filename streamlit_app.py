@@ -137,9 +137,13 @@ if st.button("View Initial Results"):
     AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
 
     st.write(f"**Initial Total Tuition (Projected):** {format_currency(grades_df['Total Projected Tuition'].sum())}")
+    st.caption("This is the projected revenue collected based on initial tuition rates and calculated increases.")
     st.write(f"**Tuition Assistance Ratio (Initial):** {tuition_assistance_ratio_initial:.2f}%")
+    st.caption("This measures how much of the projected tuition revenue is allocated to financial aid.")
     st.write(f"**Income to Expense Ratio (Initial):** {income_to_expense_ratio_initial:.2f}%")
+    st.caption("This shows whether the projected tuition revenue is sufficient to cover the school’s expenses before adjustments.")
     st.write(f"**Tuition Rate Increase (Initial):** {tuition_rate_increase_initial:.2f}%")
+    st.caption("This shows the percentage increase in tuition revenue based on the calculated tuition adjustments before user modifications.")
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
@@ -172,9 +176,13 @@ post_table_height = calculate_table_height(len(grades_post_adjustment_df))
 AgGrid(grades_post_adjustment_df, height=post_table_height, fit_columns_on_grid_load=True)
 
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
+st.caption("This is the revenue collected based on user-defined adjustments to tuition rates for each grade.")
 st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
+st.caption("This measures how much of the adjusted tuition revenue is allocated to financial aid.")
 st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
+st.caption("This shows whether adjusted tuition revenue is sufficient to cover the school’s expenses after adjustments.")
 st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
+st.caption("This shows the percentage increase in tuition revenue based on the user’s adjustments.")
 
 # Download Tuition Rate Summary
 csv_buffer = StringIO()
