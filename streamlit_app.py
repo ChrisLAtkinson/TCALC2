@@ -79,17 +79,6 @@ si_percentage = (total_si_cost / previous_expenses) * 100 if previous_expenses >
 st.info(f"Total Strategic Items Cost: {format_currency(total_si_cost)}")
 st.info(f"Strategic Items (SI) Percentage: {si_percentage:.2f}%")
 
-# Display Strategic Items Table with Wrapping
-if strategic_items:
-    st.subheader("Strategic Items Overview")
-    strategic_items_df = pd.DataFrame(strategic_items)
-    gb = GridOptionsBuilder.from_dataframe(strategic_items_df)
-    gb.configure_column("Description", wrapText=True, autoHeight=True)
-    gb.configure_column("Cost", type=["numericColumn"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
-    grid_options = gb.build()
-    table_height = calculate_table_height(len(strategic_items_df))
-    AgGrid(strategic_items_df, gridOptions=grid_options, height=table_height, fit_columns_on_grid_load=True)
-
 # Step 4: Total Expense Growth and Budget Projection
 st.subheader("Step 4: Total Expense Growth and Budget Projection")
 total_increase_percentage = oti_percentage + si_percentage
@@ -133,15 +122,27 @@ grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_
 current_total_tuition = grades_df["Total Current Tuition"].sum()
 projected_total_tuition = grades_df["Total Projected Tuition"].sum()
 
-# Pre-Adjustment Results
-st.subheader("Results: Pre-Adjustment Tuition")
-grades_pre_adjustment_df = grades_df.copy()
-grades_pre_adjustment_df["Current Tuition"] = grades_pre_adjustment_df["Current Tuition"].apply(format_currency)
-grades_pre_adjustment_df["Projected Tuition per Student"] = grades_pre_adjustment_df["Projected Tuition per Student"].apply(format_currency)
-grades_pre_adjustment_df["Total Current Tuition"] = grades_pre_adjustment_df["Total Current Tuition"].apply(format_currency)
-grades_pre_adjustment_df["Total Projected Tuition"] = grades_pre_adjustment_df["Total Projected Tuition"].apply(format_currency)
-pre_table_height = calculate_table_height(len(grades_pre_adjustment_df))
-AgGrid(grades_pre_adjustment_df, height=pre_table_height, fit_columns_on_grid_load=True)
+# Button for Initial Results
+if st.button("View Initial Results"):
+    st.subheader("Results: Initial Tuition Adjustments")
+    grades_initial_df = grades_df.copy()
+    grades_initial_df["Current Tuition"] = grades_initial_df["Current Tuition"].apply(format_currency)
+    grades_initial_df["Projected Tuition per Student"] = grades_initial_df["Projected Tuition per Student"].apply(format_currency)
+    grades_initial_df["Total Current Tuition"] = grades_initial_df["Total Current Tuition"].apply(format_currency)
+    grades_initial_df["Total Projected Tuition"] = grades_initial_df["Total Projected Tuition"].apply(format_currency)
+
+    # Calculate initial metrics
+    tuition_assistance_ratio_initial = (financial_aid / projected_total_tuition) * 100 if projected_total_tuition > 0 else 0.0
+    income_to_expense_ratio_initial = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+    tuition_rate_increase_initial = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
+
+    initial_table_height = calculate_table_height(len(grades_initial_df))
+    AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
+
+    st.write(f"**Adjusted Total Tuition (Projected):** {format_currency(projected_total_tuition)}")
+    st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_initial:.2f}%")
+    st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_initial:.2f}%")
+    st.write(f"**Tuition Rate Increase (Projected):** {tuition_rate_increase_initial:.2f}%")
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
