@@ -128,11 +128,7 @@ if st.button("View Initial Results"):
     grades_initial_df["Total Current Tuition"] = grades_initial_df["Total Current Tuition"].apply(format_currency)
     grades_initial_df["Total Projected Tuition"] = grades_initial_df["Total Projected Tuition"].apply(format_currency)
 
-    # Calculate initial metrics
-    tuition_assistance_ratio_initial = (financial_aid / grades_df["Total Projected Tuition"].sum()) * 100 if grades_df["Total Projected Tuition"].sum() > 0 else 0.0
-    income_to_expense_ratio_initial = (grades_df["Total Projected Tuition"].sum() / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
-    tuition_rate_increase_initial = ((grades_df["Total Projected Tuition"].sum() - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
-
+    # Render initial table
     initial_table_height = calculate_table_height(len(grades_initial_df))
     AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
 
@@ -151,7 +147,9 @@ if st.button("View Initial Results"):
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
-for i, grade in grades_df.iterrows():
+adjusted_grades_df = grades_df.copy()  # Ensure we adjust a copy, not the original DataFrame
+
+for i, grade in adjusted_grades_df.iterrows():
     adjusted_tuition = st.number_input(
         f"Adjusted Tuition for {grade['Grade']} ($)",
         min_value=0.0,
@@ -159,27 +157,28 @@ for i, grade in grades_df.iterrows():
         value=grade["Projected Tuition per Student"],
         key=f"adjusted_tuition_{i}"
     )
-    grades_df.at[i, "Adjusted Tuition per Student"] = adjusted_tuition
+    adjusted_grades_df.at[i, "Adjusted Tuition per Student"] = adjusted_tuition
 
 # Recalculate totals immediately after adjustments
-grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
-
-# Post-Adjustment Metrics
-adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
-tuition_assistance_ratio_adjusted = (financial_aid / adjusted_total_tuition) * 100 if adjusted_total_tuition > 0 else 0.0
-income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
-tuition_rate_increase_adjusted = ((adjusted_total_tuition - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
+adjusted_grades_df["Total Adjusted Tuition"] = adjusted_grades_df["Number of Students"] * adjusted_grades_df["Adjusted Tuition per Student"]
 
 # Post-Adjustment Results
 st.subheader("Results: Post-Adjustment Tuition")
-grades_post_adjustment_df = grades_df.copy()
+grades_post_adjustment_df = adjusted_grades_df.copy()
 grades_post_adjustment_df["Current Tuition"] = grades_post_adjustment_df["Current Tuition"].apply(format_currency)
 grades_post_adjustment_df["Adjusted Tuition per Student"] = grades_post_adjustment_df["Adjusted Tuition per Student"].apply(format_currency)
 grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df["Total Adjusted Tuition"].apply(format_currency)
+
+# Render the adjusted table
 post_table_height = calculate_table_height(len(grades_post_adjustment_df))
 AgGrid(grades_post_adjustment_df, height=post_table_height, fit_columns_on_grid_load=True)
 
 # Post-Adjustment Metrics Explanations
+adjusted_total_tuition = adjusted_grades_df["Total Adjusted Tuition"].sum()
+tuition_assistance_ratio_adjusted = (financial_aid / adjusted_total_tuition) * 100 if adjusted_total_tuition > 0 else 0.0
+income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+tuition_rate_increase_adjusted = ((adjusted_total_tuition - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
+
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
 st.write(f"*(The total tuition revenue based on user-adjusted tuition rates and student numbers.)*")
 
@@ -194,7 +193,7 @@ st.write(f"*(The percentage increase in tuition revenue after user adjustments t
 
 # Download Tuition Rate Summary
 csv_buffer = StringIO()
-grades_df.to_csv(csv_buffer, index=False)
+adjusted_grades_df.to_csv(csv_buffer, index=False)
 csv_data = csv_buffer.getvalue()
 
 st.download_button(
