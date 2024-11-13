@@ -172,6 +172,7 @@ grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df[
 post_table_height = calculate_table_height(len(grades_post_adjustment_df))
 AgGrid(grades_post_adjustment_df, height=post_table_height)
 
+# Post-adjustment results
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(post_total_tuition)}")
 st.caption("This is the revenue collected based on user-defined adjustments to tuition rates for each grade.")
 st.write(f"**Adjusted Tuition Assistance Ratio:** {post_tuition_assistance_ratio:.2f}%")
