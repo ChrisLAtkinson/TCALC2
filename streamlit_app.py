@@ -119,51 +119,26 @@ grades_df["Projected Tuition per Student"] = grades_df["Current Tuition"] * (1 +
 grades_df["Total Current Tuition"] = grades_df["Number of Students"] * grades_df["Current Tuition"]
 grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_df["Projected Tuition per Student"]
 
-current_total_tuition = grades_df["Total Current Tuition"].sum()
-projected_total_tuition = grades_df["Total Projected Tuition"].sum()
-
-# Button for Initial Results
-if st.button("View Initial Results"):
-    st.subheader("Results: Initial Tuition Adjustments")
-    grades_initial_df = grades_df.copy()
-    grades_initial_df["Current Tuition"] = grades_initial_df["Current Tuition"].apply(format_currency)
-    grades_initial_df["Projected Tuition per Student"] = grades_initial_df["Projected Tuition per Student"].apply(format_currency)
-    grades_initial_df["Total Current Tuition"] = grades_initial_df["Total Current Tuition"].apply(format_currency)
-    grades_initial_df["Total Projected Tuition"] = grades_initial_df["Total Projected Tuition"].apply(format_currency)
-
-    # Calculate initial metrics
-    tuition_assistance_ratio_initial = (financial_aid / projected_total_tuition) * 100 if projected_total_tuition > 0 else 0.0
-    income_to_expense_ratio_initial = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
-    tuition_rate_increase_initial = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
-
-    initial_table_height = calculate_table_height(len(grades_initial_df))
-    AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
-
-    st.write(f"**Adjusted Total Tuition (Projected):** {format_currency(projected_total_tuition)}")
-    st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_initial:.2f}%")
-    st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_initial:.2f}%")
-    st.write(f"**Tuition Rate Increase (Projected):** {tuition_rate_increase_initial:.2f}%")
-
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
-adjusted_tuitions = []
 for i, grade in grades_df.iterrows():
     adjusted_tuition = st.number_input(
         f"Adjusted Tuition for {grade['Grade']} ($)",
         min_value=0.0,
         step=0.01,
         value=grade["Projected Tuition per Student"],
+        key=f"adjusted_tuition_{i}"
     )
-    adjusted_tuitions.append(adjusted_tuition)
+    grades_df.at[i, "Adjusted Tuition per Student"] = adjusted_tuition
 
-grades_df["Adjusted Tuition per Student"] = adjusted_tuitions
+# Recalculate totals immediately after adjustments
 grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
 
-# Post-adjustment Metrics
+# Post-Adjustment Metrics
 adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
 tuition_assistance_ratio_adjusted = (financial_aid / adjusted_total_tuition) * 100 if adjusted_total_tuition > 0 else 0.0
 income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
-tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
+tuition_rate_increase_adjusted = ((adjusted_total_tuition - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
 
 # Post-Adjustment Results
 st.subheader("Results: Post-Adjustment Tuition")
