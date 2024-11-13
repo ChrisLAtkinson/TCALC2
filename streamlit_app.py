@@ -72,7 +72,7 @@ st.info(f"Strategic Items (SI) Percentage: {si_percentage:.2f}%")
 if strategic_items:
     st.subheader("Strategic Items Overview")
     strategic_items_df = pd.DataFrame(strategic_items)
-    st.table(strategic_items_df)
+    st.dataframe(strategic_items_df, use_container_width=True)
 
 # Step 4: Total Expense Growth and Budget Projection
 st.subheader("Step 4: Total Expense Growth and Budget Projection")
@@ -120,23 +120,16 @@ projected_total_tuition = grades_df["Total Projected Tuition"].sum()
 # Pre-adjustment Metrics
 if st.button("View Results Before Adjustments"):
     st.subheader("Initial Projected Tuition Increase")
-    st.table(grades_df)
+    st.dataframe(grades_df, use_container_width=True)
 
     tuition_assistance_ratio_projected = (financial_aid / projected_total_tuition) * 100 if projected_total_tuition > 0 else 0.0
     income_to_expense_ratio_projected = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
     tuition_rate_increase_projected = ((projected_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
     st.write(f"**Projected Total Tuition (Before Adjustments):** {format_currency(projected_total_tuition)}")
-    st.write("This represents the total projected tuition revenue after applying the calculated percentage increase (from inflation, productivity, and strategic items) to the current tuition rates.")
-
     st.write(f"**Projected Tuition Assistance Ratio:** {tuition_assistance_ratio_projected:.2f}%")
-    st.write("This measures how much of the projected tuition revenue is allocated to financial aid.")
-
     st.write(f"**Projected Income to Expense (I/E) Ratio:** {income_to_expense_ratio_projected:.2f}%")
-    st.write("This shows whether the projected tuition revenue is sufficient to cover the school’s projected expenses. A ratio above 100% means revenue exceeds expenses, while below 100% means a shortfall.")
-
     st.write(f"**Tuition Rate Increase (Projected):** {tuition_rate_increase_projected:.2f}%")
-    st.write("This indicates the percentage growth in tuition revenue due to the projected changes compared to the current tuition levels.")
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
@@ -160,18 +153,11 @@ income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget)
 tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
 st.subheader("Adjusted Results")
-st.table(grades_df)
+st.dataframe(grades_df, use_container_width=True)
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
-st.write("This is the revenue collected based on user-defined adjustments to tuition rates for each grade.")
-
 st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
-st.write("This measures how much of the adjusted tuition revenue is allocated to financial aid.")
-
 st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
-st.write("This shows whether adjusted tuition revenue is sufficient to cover the school’s expenses after adjustments.")
-
 st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
-st.write("This shows the percentage increase in tuition revenue based on the user’s adjustments.")
 
 # Print Button for CSV Download
 csv_buffer = io.StringIO()
