@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import locale
-from io import StringIO  # Fix for StringIO error
+from io import StringIO
 from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 
@@ -76,6 +76,7 @@ if strategic_items:
     strategic_items_df = pd.DataFrame(strategic_items)
     gb = GridOptionsBuilder.from_dataframe(strategic_items_df)
     gb.configure_column("Description", wrapText=True, autoHeight=True)
+    gb.configure_column("Cost", type=["numericColumn"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
     grid_options = gb.build()
     AgGrid(strategic_items_df, gridOptions=grid_options, height=400, fit_columns_on_grid_load=True)
 
@@ -122,6 +123,15 @@ grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_
 current_total_tuition = grades_df["Total Current Tuition"].sum()
 projected_total_tuition = grades_df["Total Projected Tuition"].sum()
 
+# Pre-Adjustment Results
+st.subheader("Results: Pre-Adjustment Tuition")
+grades_pre_adjustment_df = grades_df.copy()
+grades_pre_adjustment_df["Current Tuition"] = grades_pre_adjustment_df["Current Tuition"].apply(format_currency)
+grades_pre_adjustment_df["Projected Tuition per Student"] = grades_pre_adjustment_df["Projected Tuition per Student"].apply(format_currency)
+grades_pre_adjustment_df["Total Current Tuition"] = grades_pre_adjustment_df["Total Current Tuition"].apply(format_currency)
+grades_pre_adjustment_df["Total Projected Tuition"] = grades_pre_adjustment_df["Total Projected Tuition"].apply(format_currency)
+AgGrid(grades_pre_adjustment_df, fit_columns_on_grid_load=True)
+
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
 adjusted_tuitions = []
@@ -143,13 +153,13 @@ tuition_assistance_ratio_adjusted = (financial_aid / adjusted_total_tuition) * 1
 income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
 tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
-# Display Adjusted Results
-st.subheader("Adjusted Results")
-gb = GridOptionsBuilder.from_dataframe(grades_df)
-gb.configure_column("Grade", wrapText=True, autoHeight=True)
-gb.configure_column("Adjusted Tuition per Student", type=["numericColumn", "numberColumnFilter"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
-grid_options = gb.build()
-AgGrid(grades_df, gridOptions=grid_options, height=400, fit_columns_on_grid_load=True)
+# Post-Adjustment Results
+st.subheader("Results: Post-Adjustment Tuition")
+grades_post_adjustment_df = grades_df.copy()
+grades_post_adjustment_df["Current Tuition"] = grades_post_adjustment_df["Current Tuition"].apply(format_currency)
+grades_post_adjustment_df["Adjusted Tuition per Student"] = grades_post_adjustment_df["Adjusted Tuition per Student"].apply(format_currency)
+grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df["Total Adjusted Tuition"].apply(format_currency)
+AgGrid(grades_post_adjustment_df, fit_columns_on_grid_load=True)
 
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
 st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
@@ -157,7 +167,7 @@ st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_
 st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
 
 # Download Tuition Rate Summary
-csv_buffer = StringIO()  # Fix for StringIO
+csv_buffer = StringIO()
 grades_df.to_csv(csv_buffer, index=False)
 csv_data = csv_buffer.getvalue()
 
