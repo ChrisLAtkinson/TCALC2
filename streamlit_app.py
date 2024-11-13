@@ -119,6 +119,28 @@ grades_df["Projected Tuition per Student"] = grades_df["Current Tuition"] * (1 +
 grades_df["Total Current Tuition"] = grades_df["Number of Students"] * grades_df["Current Tuition"]
 grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_df["Projected Tuition per Student"]
 
+# Button for Initial Results
+if st.button("View Initial Results"):
+    st.subheader("Results: Initial Tuition Adjustments")
+    grades_initial_df = grades_df.copy()
+    grades_initial_df["Current Tuition"] = grades_initial_df["Current Tuition"].apply(format_currency)
+    grades_initial_df["Projected Tuition per Student"] = grades_initial_df["Projected Tuition per Student"].apply(format_currency)
+    grades_initial_df["Total Current Tuition"] = grades_initial_df["Total Current Tuition"].apply(format_currency)
+    grades_initial_df["Total Projected Tuition"] = grades_initial_df["Total Projected Tuition"].apply(format_currency)
+
+    # Calculate initial metrics
+    tuition_assistance_ratio_initial = (financial_aid / grades_df["Total Projected Tuition"].sum()) * 100 if grades_df["Total Projected Tuition"].sum() > 0 else 0.0
+    income_to_expense_ratio_initial = (grades_df["Total Projected Tuition"].sum() / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+    tuition_rate_increase_initial = ((grades_df["Total Projected Tuition"].sum() - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
+
+    initial_table_height = calculate_table_height(len(grades_initial_df))
+    AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
+
+    st.write(f"**Initial Total Tuition (Projected):** {format_currency(grades_df['Total Projected Tuition'].sum())}")
+    st.write(f"**Tuition Assistance Ratio (Initial):** {tuition_assistance_ratio_initial:.2f}%")
+    st.write(f"**Income to Expense Ratio (Initial):** {income_to_expense_ratio_initial:.2f}%")
+    st.write(f"**Tuition Rate Increase (Initial):** {tuition_rate_increase_initial:.2f}%")
+
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
 for i, grade in grades_df.iterrows():
