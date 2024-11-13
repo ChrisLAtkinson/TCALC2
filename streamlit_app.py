@@ -72,7 +72,9 @@ st.info(f"Strategic Items (SI) Percentage: {si_percentage:.2f}%")
 if strategic_items:
     st.subheader("Strategic Items Overview")
     strategic_items_df = pd.DataFrame(strategic_items)
-    st.dataframe(strategic_items_df, use_container_width=True)
+    st.dataframe(strategic_items_df.style.set_table_styles(
+        [{'selector': 'table', 'props': [('width', '100%')]}]
+    ))
 
 # Step 4: Total Expense Growth and Budget Projection
 st.subheader("Step 4: Total Expense Growth and Budget Projection")
@@ -120,7 +122,9 @@ projected_total_tuition = grades_df["Total Projected Tuition"].sum()
 # Pre-adjustment Metrics
 if st.button("View Results Before Adjustments"):
     st.subheader("Initial Projected Tuition Increase")
-    st.dataframe(grades_df, use_container_width=True)
+    st.dataframe(grades_df.style.set_table_styles(
+        [{'selector': 'table', 'props': [('width', '100%')]}]
+    ))
 
     tuition_assistance_ratio_projected = (financial_aid / projected_total_tuition) * 100 if projected_total_tuition > 0 else 0.0
     income_to_expense_ratio_projected = (projected_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
@@ -153,13 +157,15 @@ income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget)
 tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
 
 st.subheader("Adjusted Results")
-st.dataframe(grades_df, use_container_width=True)
+st.dataframe(grades_df.style.set_table_styles(
+    [{'selector': 'table', 'props': [('width', '100%')]}]
+))
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
 st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
 st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
 st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
 
-# Print Button for CSV Download
+# Download Tuition Rate Summary
 csv_buffer = io.StringIO()
 grades_df.to_csv(csv_buffer, index=False)
 csv_data = csv_buffer.getvalue()
