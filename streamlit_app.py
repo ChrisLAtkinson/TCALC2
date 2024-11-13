@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import locale
+from io import StringIO  # Fix for StringIO error
 from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 
@@ -156,7 +157,7 @@ st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_
 st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
 
 # Download Tuition Rate Summary
-csv_buffer = io.StringIO()
+csv_buffer = StringIO()  # Fix for StringIO
 grades_df.to_csv(csv_buffer, index=False)
 csv_data = csv_buffer.getvalue()
 
