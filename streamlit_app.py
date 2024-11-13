@@ -26,6 +26,15 @@ def format_input_as_currency(input_value):
     except ValueError:
         return ""
 
+def calculate_table_height(num_rows, row_height=35, buffer_height=80):
+    """
+    Dynamically calculate the height of the table based on the number of rows.
+    - num_rows: Number of rows in the table
+    - row_height: Height per row in pixels
+    - buffer_height: Additional buffer space for the header and padding
+    """
+    return num_rows * row_height + buffer_height
+
 # Streamlit App Start
 st.title("Tuition and Expense Planning Tool")
 
@@ -78,7 +87,8 @@ if strategic_items:
     gb.configure_column("Description", wrapText=True, autoHeight=True)
     gb.configure_column("Cost", type=["numericColumn"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
     grid_options = gb.build()
-    AgGrid(strategic_items_df, gridOptions=grid_options, height=400, fit_columns_on_grid_load=True)
+    table_height = calculate_table_height(len(strategic_items_df))
+    AgGrid(strategic_items_df, gridOptions=grid_options, height=table_height, fit_columns_on_grid_load=True)
 
 # Step 4: Total Expense Growth and Budget Projection
 st.subheader("Step 4: Total Expense Growth and Budget Projection")
@@ -130,7 +140,8 @@ grades_pre_adjustment_df["Current Tuition"] = grades_pre_adjustment_df["Current 
 grades_pre_adjustment_df["Projected Tuition per Student"] = grades_pre_adjustment_df["Projected Tuition per Student"].apply(format_currency)
 grades_pre_adjustment_df["Total Current Tuition"] = grades_pre_adjustment_df["Total Current Tuition"].apply(format_currency)
 grades_pre_adjustment_df["Total Projected Tuition"] = grades_pre_adjustment_df["Total Projected Tuition"].apply(format_currency)
-AgGrid(grades_pre_adjustment_df, fit_columns_on_grid_load=True)
+pre_table_height = calculate_table_height(len(grades_pre_adjustment_df))
+AgGrid(grades_pre_adjustment_df, height=pre_table_height, fit_columns_on_grid_load=True)
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
@@ -159,7 +170,8 @@ grades_post_adjustment_df = grades_df.copy()
 grades_post_adjustment_df["Current Tuition"] = grades_post_adjustment_df["Current Tuition"].apply(format_currency)
 grades_post_adjustment_df["Adjusted Tuition per Student"] = grades_post_adjustment_df["Adjusted Tuition per Student"].apply(format_currency)
 grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df["Total Adjusted Tuition"].apply(format_currency)
-AgGrid(grades_post_adjustment_df, fit_columns_on_grid_load=True)
+post_table_height = calculate_table_height(len(grades_post_adjustment_df))
+AgGrid(grades_post_adjustment_df, height=post_table_height, fit_columns_on_grid_load=True)
 
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
 st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
