@@ -150,15 +150,8 @@ grades_post_adjustment_df["Current Tuition"] = grades_post_adjustment_df["Curren
 grades_post_adjustment_df["Adjusted Tuition per Student"] = grades_post_adjustment_df["Adjusted Tuition per Student"].apply(format_currency)
 grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df["Total Adjusted Tuition"].apply(format_currency)
 
-# Configure AgGrid for Post-Adjustment Results
-gb = GridOptionsBuilder.from_dataframe(grades_post_adjustment_df)
-gb.configure_column("Grade", wrapText=True, autoHeight=True)
-gb.configure_column("Adjusted Tuition per Student", type=["numericColumn"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
-gb.configure_column("Total Adjusted Tuition", type=["numericColumn"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
-post_grid_options = gb.build()
-
-post_table_height = calculate_table_height(len(grades_post_adjustment_df))
-AgGrid(grades_post_adjustment_df, gridOptions=post_grid_options, height=post_table_height, fit_columns_on_grid_load=True)
+# Display full table without scrolling
+AgGrid(grades_post_adjustment_df, fit_columns_on_grid_load=True)
 
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
 st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
@@ -176,3 +169,4 @@ st.download_button(
     file_name="tuition_rate_summary.csv",
     mime="text/csv",
 )
+
