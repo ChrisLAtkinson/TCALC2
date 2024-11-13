@@ -75,7 +75,6 @@ if strategic_items:
     strategic_items_df = pd.DataFrame(strategic_items)
     gb = GridOptionsBuilder.from_dataframe(strategic_items_df)
     gb.configure_column("Description", wrapText=True, autoHeight=True)
-    gb.configure_column("Cost", type=["numericColumn", "numberColumnFilter"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
     grid_options = gb.build()
     AgGrid(strategic_items_df, gridOptions=grid_options, height=400, fit_columns_on_grid_load=True)
 
@@ -122,10 +121,48 @@ grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_
 current_total_tuition = grades_df["Total Current Tuition"].sum()
 projected_total_tuition = grades_df["Total Projected Tuition"].sum()
 
-# Display Grade-Level Data Table with Wrapping
-if not grades_df.empty:
-    st.subheader("Grade Level Tuition Overview")
-    gb = GridOptionsBuilder.from_dataframe(grades_df)
-    gb.configure_column("Grade", wrapText=True, autoHeight=True)
-    grid_options = gb.build()
-    AgGrid(grades_df, gridOptions=grid_options, height=400, fit_columns_on_grid_load=True)
+# Adjust Tuition by Grade Level
+st.subheader("Adjust Tuition by Grade Level")
+adjusted_tuitions = []
+for i, grade in grades_df.iterrows():
+    adjusted_tuition = st.number_input(
+        f"Adjusted Tuition for {grade['Grade']} ($)",
+        min_value=0.0,
+        step=0.01,
+        value=grade["Projected Tuition per Student"],
+    )
+    adjusted_tuitions.append(adjusted_tuition)
+
+grades_df["Adjusted Tuition per Student"] = adjusted_tuitions
+grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
+
+# Post-adjustment Metrics
+adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
+tuition_assistance_ratio_adjusted = (financial_aid / adjusted_total_tuition) * 100 if adjusted_total_tuition > 0 else 0.0
+income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+tuition_rate_increase_adjusted = ((adjusted_total_tuition - current_total_tuition) / current_total_tuition) * 100 if current_total_tuition > 0 else 0.0
+
+# Display Adjusted Results
+st.subheader("Adjusted Results")
+gb = GridOptionsBuilder.from_dataframe(grades_df)
+gb.configure_column("Grade", wrapText=True, autoHeight=True)
+gb.configure_column("Adjusted Tuition per Student", type=["numericColumn", "numberColumnFilter"], valueFormatter="x.toLocaleString('en-US', {style: 'currency', currency: 'USD'})")
+grid_options = gb.build()
+AgGrid(grades_df, gridOptions=grid_options, height=400, fit_columns_on_grid_load=True)
+
+st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
+st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
+st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
+st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
+
+# Download Tuition Rate Summary
+csv_buffer = io.StringIO()
+grades_df.to_csv(csv_buffer, index=False)
+csv_data = csv_buffer.getvalue()
+
+st.download_button(
+    label="Download Tuition Rate Summary",
+    data=csv_data,
+    file_name="tuition_rate_summary.csv",
+    mime="text/csv",
+)
