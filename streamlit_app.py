@@ -136,10 +136,18 @@ if st.button("View Initial Results"):
     initial_table_height = calculate_table_height(len(grades_initial_df))
     AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
 
+    # Initial Metrics Explanations
     st.write(f"**Initial Total Tuition (Projected):** {format_currency(grades_df['Total Projected Tuition'].sum())}")
+    st.write(f"*(The total expected tuition revenue based on projected rates and student numbers.)*")
+
     st.write(f"**Tuition Assistance Ratio (Initial):** {tuition_assistance_ratio_initial:.2f}%")
+    st.write(f"*(Percentage of tuition revenue allocated for financial aid support.)*")
+
     st.write(f"**Income to Expense Ratio (Initial):** {income_to_expense_ratio_initial:.2f}%")
+    st.write(f"*(The proportion of total projected income relative to the planned expense budget.)*")
+
     st.write(f"**Tuition Rate Increase (Initial):** {tuition_rate_increase_initial:.2f}%")
+    st.write(f"*(The percentage increase in tuition revenue compared to current rates.)*")
 
 # Adjust Tuition by Grade Level
 st.subheader("Adjust Tuition by Grade Level")
@@ -171,10 +179,18 @@ grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df[
 post_table_height = calculate_table_height(len(grades_post_adjustment_df))
 AgGrid(grades_post_adjustment_df, height=post_table_height, fit_columns_on_grid_load=True)
 
+# Post-Adjustment Metrics Explanations
 st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
+st.write(f"*(The total tuition revenue based on user-adjusted tuition rates and student numbers.)*")
+
 st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
+st.write(f"*(Revised percentage of tuition revenue allocated for financial aid support.)*")
+
 st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
+st.write(f"*(The proportion of total adjusted income relative to the planned expense budget.)*")
+
 st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
+st.write(f"*(The percentage increase in tuition revenue after user adjustments to the rates.)*")
 
 # Download Tuition Rate Summary
 csv_buffer = StringIO()
