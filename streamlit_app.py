@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import locale
+from io import StringIO
 from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 
@@ -26,7 +27,12 @@ def format_input_as_currency(input_value):
         return ""
 
 def calculate_table_height(num_rows, row_height=35, buffer_height=80):
-    """Calculate dynamic table height."""
+    """
+    Dynamically calculate the height of the table based on the number of rows.
+    - num_rows: Number of rows in the table
+    - row_height: Height per row in pixels
+    - buffer_height: Additional buffer space for the header and padding
+    """
     return num_rows * row_height + buffer_height
 
 # Streamlit App Start
@@ -107,49 +113,77 @@ for i in range(num_grades):
     current_tuition = st.number_input(f"Current Tuition per Student in {grade_name} ($)", min_value=0.0, step=0.01, value=0.0)
     grades.append({"Grade": grade_name, "Number of Students": num_students, "Current Tuition": current_tuition})
 
+# Calculate initial projected tuition increases
 grades_df = pd.DataFrame(grades)
 grades_df["Projected Tuition per Student"] = grades_df["Current Tuition"] * (1 + total_increase_percentage / 100)
 grades_df["Total Current Tuition"] = grades_df["Number of Students"] * grades_df["Current Tuition"]
 grades_df["Total Projected Tuition"] = grades_df["Number of Students"] * grades_df["Projected Tuition per Student"]
 
-# Adjustments and Post-Adjustment Results
-st.subheader("Results: Post-Adjustment Tuition")
+# Button for Initial Results
+if st.button("View Initial Results"):
+    st.subheader("Results: Initial Tuition Adjustments")
+    grades_initial_df = grades_df.copy()
+    grades_initial_df["Current Tuition"] = grades_initial_df["Current Tuition"].apply(format_currency)
+    grades_initial_df["Projected Tuition per Student"] = grades_initial_df["Projected Tuition per Student"].apply(format_currency)
+    grades_initial_df["Total Current Tuition"] = grades_initial_df["Total Current Tuition"].apply(format_currency)
+    grades_initial_df["Total Projected Tuition"] = grades_initial_df["Total Projected Tuition"].apply(format_currency)
 
-adjusted_tuitions = []
-for i, row in grades_df.iterrows():
+    # Calculate initial metrics
+    tuition_assistance_ratio_initial = (financial_aid / grades_df["Total Projected Tuition"].sum()) * 100 if grades_df["Total Projected Tuition"].sum() > 0 else 0.0
+    income_to_expense_ratio_initial = (grades_df["Total Projected Tuition"].sum() / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+    tuition_rate_increase_initial = ((grades_df["Total Projected Tuition"].sum() - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
+
+    initial_table_height = calculate_table_height(len(grades_initial_df))
+    AgGrid(grades_initial_df, height=initial_table_height, fit_columns_on_grid_load=True)
+
+    st.write(f"**Initial Total Tuition (Projected):** {format_currency(grades_df['Total Projected Tuition'].sum())}")
+    st.write(f"**Tuition Assistance Ratio (Initial):** {tuition_assistance_ratio_initial:.2f}%")
+    st.write(f"**Income to Expense Ratio (Initial):** {income_to_expense_ratio_initial:.2f}%")
+    st.write(f"**Tuition Rate Increase (Initial):** {tuition_rate_increase_initial:.2f}%")
+
+# Adjust Tuition by Grade Level
+st.subheader("Adjust Tuition by Grade Level")
+for i, grade in grades_df.iterrows():
     adjusted_tuition = st.number_input(
-        f"Adjusted Tuition for {row['Grade']} ($)",
+        f"Adjusted Tuition for {grade['Grade']} ($)",
         min_value=0.0,
         step=0.01,
-        value=row["Projected Tuition per Student"],
-        key=f"adjusted_tuition_{i}",
+        value=grade["Projected Tuition per Student"],
+        key=f"adjusted_tuition_{i}"
     )
-    adjusted_tuitions.append(adjusted_tuition)
+    grades_df.at[i, "Adjusted Tuition per Student"] = adjusted_tuition
 
-grades_df["Adjusted Tuition per Student"] = adjusted_tuitions
+# Recalculate totals immediately after adjustments
 grades_df["Total Adjusted Tuition"] = grades_df["Number of Students"] * grades_df["Adjusted Tuition per Student"]
 
-# Metrics After Adjustment
-post_total_tuition = grades_df["Total Adjusted Tuition"].sum()
-post_tuition_assistance_ratio = (financial_aid / post_total_tuition) * 100 if post_total_tuition > 0 else 0.0
-post_income_to_expense_ratio = (post_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
-post_tuition_rate_increase = ((post_total_tuition - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
+# Post-Adjustment Metrics
+adjusted_total_tuition = grades_df["Total Adjusted Tuition"].sum()
+tuition_assistance_ratio_adjusted = (financial_aid / adjusted_total_tuition) * 100 if adjusted_total_tuition > 0 else 0.0
+income_to_expense_ratio_adjusted = (adjusted_total_tuition / new_expense_budget) * 100 if new_expense_budget > 0 else 0.0
+tuition_rate_increase_adjusted = ((adjusted_total_tuition - grades_df["Total Current Tuition"].sum()) / grades_df["Total Current Tuition"].sum()) * 100 if grades_df["Total Current Tuition"].sum() > 0 else 0.0
 
-# Display Adjusted Table
+# Post-Adjustment Results
+st.subheader("Results: Post-Adjustment Tuition")
 grades_post_adjustment_df = grades_df.copy()
+grades_post_adjustment_df["Current Tuition"] = grades_post_adjustment_df["Current Tuition"].apply(format_currency)
 grades_post_adjustment_df["Adjusted Tuition per Student"] = grades_post_adjustment_df["Adjusted Tuition per Student"].apply(format_currency)
 grades_post_adjustment_df["Total Adjusted Tuition"] = grades_post_adjustment_df["Total Adjusted Tuition"].apply(format_currency)
-
-st.write("### Updated Tuition Table After Adjustments")
 post_table_height = calculate_table_height(len(grades_post_adjustment_df))
-AgGrid(grades_post_adjustment_df, height=post_table_height)
+AgGrid(grades_post_adjustment_df, height=post_table_height, fit_columns_on_grid_load=True)
 
-# Display Metrics
-st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(post_total_tuition)}")
-st.caption("This is the revenue collected based on user-defined adjustments to tuition rates for each grade.")
-st.write(f"**Adjusted Tuition Assistance Ratio:** {post_tuition_assistance_ratio:.2f}%")
-st.caption("This measures how much of the adjusted tuition revenue is allocated to financial aid.")
-st.write(f"**Adjusted Income to Expense Ratio:** {post_income_to_expense_ratio:.2f}%")
-st.caption("This shows whether adjusted tuition revenue is sufficient to cover the school’s expenses after adjustments.")
-st.write(f"**Tuition Rate Increase (Adjusted):** {post_tuition_rate_increase:.2f}%")
-st.caption("This shows the percentage increase in tuition revenue based on the user’s adjustments.")
+st.write(f"**Adjusted Total Tuition (User Adjusted):** {format_currency(adjusted_total_tuition)}")
+st.write(f"**Adjusted Tuition Assistance Ratio:** {tuition_assistance_ratio_adjusted:.2f}%")
+st.write(f"**Adjusted Income to Expense (I/E) Ratio:** {income_to_expense_ratio_adjusted:.2f}%")
+st.write(f"**Tuition Rate Increase (Adjusted):** {tuition_rate_increase_adjusted:.2f}%")
+
+# Download Tuition Rate Summary
+csv_buffer = StringIO()
+grades_df.to_csv(csv_buffer, index=False)
+csv_data = csv_buffer.getvalue()
+
+st.download_button(
+    label="Download Tuition Rate Summary",
+    data=csv_data,
+    file_name="tuition_rate_summary.csv",
+    mime="text/csv",
+)
